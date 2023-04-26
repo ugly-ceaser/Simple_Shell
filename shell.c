@@ -8,7 +8,6 @@
  *
  * Return: Always 0.
  */
-
 int main(int arg_count, char **arg_vector, char **env_variable)
 {
     if (arg_count == 1)
