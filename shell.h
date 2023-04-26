@@ -6,7 +6,4 @@
 #include <stdlib.h>
 
 void prompt(char **arg_vector,char **env_variable);
-
-
-
 #endif
