@@ -10,14 +10,13 @@
  */
 int main(int arg_count, char **arg_vector, char **env_variable)
 {
-    /* If no command-line arguments were passed except for the program name */
-    if (arg_count == 1)
+    
+    if (arg_count > 1)
     {
-        /* Call the fetch function with the arg_vector and env_variable arguments */
-        fetch(arg_vector, env_variable);
+        prompt(arg_vector, env_variable);
     }
 
-    /* Return 0 to indicate successful execution */
+    
     return (0);
 }
 
