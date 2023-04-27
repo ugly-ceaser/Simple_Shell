@@ -1,63 +1,81 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+#include "shell.h"
 #include <sys/wait.h>
 
-#define MAX_INPUT_LENGTH 1024
+#define MAX_VALUE 10
 
 /**
  * prompt - read input from the user and execute the command
+ * @arg_vector: array of strings containing the command-line arguments
  * @env_variable: array of strings containing the environment variables
  *
  * Return: None.
  */
-void prompt(char **env_variable)
+void prompt(char **arg_vector, char **env_variable)
 {
-	char *input = NULL;
-	size_t input_size = 0;
-	ssize_t input_lenght;
+	char *data = NULL;
+	int checker, progress_status, counter;
+	size_t num = 0;
+	ssize_t char_counter;
 	pid_t child_process;
-	int child_status;
 
 	while (1)
 	{
+		/* If standard input is a terminal, display a prompt */
 		if (isatty(STDIN_FILENO))
-			printf("#cisfun$ ");
+			printf("#cisfun$");
 
-		input_lenght = getline(&input, &input_size, stdin);
+		/* Read input from the user */
+		char_counter = getline(&data, &num, stdin);
 
-		if (input_lenght == -1)
+		/* If getline fails, exit with a failure status */
+		if (char_counter == -1)
 		{
-			free(input);
+			free(data);
 			exit(EXIT_FAILURE);
 		}
 
-		if (input_lenght > 0 && input[input_lenght - 1] == '\n')
-			input[input_lenght - 1] = '\0';
+		/* Replace the newline character with a null character */
+		checker = 0;
+		while (data[checker])
+		{
+			if (data[checker] == '\n')
+				data[checker] = 0;
+			checker++;
+		}
 
+		counter = 0;
+
+		/* Set the command to be executed */
+		arg_vector[counter] = strtok(data, " ");
+
+		/* Parse the input string into an array of arguments */
+		while (arg_vector[counter] != NULL)
+		{
+			arg_vector[++counter] = strtok(NULL, " ");
+		}
+
+		/* Create a child process to execute the command */
 		child_process = fork();
 
+		/* If fork fails, exit with a failure status */
 		if (child_process == -1)
-		{
-			perror("fork");
-			free(input);
 			exit(EXIT_FAILURE);
-		}
 
+		/* If this is the child process, execute the command */
 		if (child_process == 0)
 		{
-			char *command = strtok(input, " ");
-
-			if (execve(command, &command, env_variable) == -1)
+			if (execve(arg_vector[0], arg_vector, env_variable) == -1)
 			{
-				perror("operation failed");
+				/* If execve fails, print an error message to the console */
+				printf("%s :Operation failed\n", arg_vector[0]);
 				exit(EXIT_FAILURE);
 			}
 		}
+		/* If this is the parent process, wait for the child to finish */
 		else
 		{
-			waitpid(child_process, &child_status, 0);
+			wait(&progress_status);
 		}
 	}
 }
+
